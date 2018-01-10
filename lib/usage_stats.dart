@@ -8,4 +8,6 @@ class UsageStats {
 
   static Future<String> get platformVersion =>
       _channel.invokeMethod('getPlatformVersion');
+  static Future<List<String>> get usageToday =>
+      _channel.invokeMethod('usageToday');
 }

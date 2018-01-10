@@ -11,6 +11,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  String _usageToday = "0:00";
 
   @override
   initState() {
@@ -18,12 +19,38 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
+  getUsageToday() async  {
+      List<String> list = await UsageStats.usageToday;
+      num duration = 0;
+      for (var s in list) {
+        var entry = s.split(";");
+        if (entry.length == 2)
+        {
+          var t = int.parse(entry[0]);
+          if (t > 1000 && !entry[1].endsWith("launcher")) {
+            duration += num.parse(entry[0]);
+          }
+        }
+      }
+      num seconds = duration ~/ 1000;
+      return (seconds ~/ 60).toString() + ":" +  (seconds % 60).toString();
+  }
+
+  updateUsage() async {
+    var usage = await getUsageToday();
+    setState(() {
+      _usageToday : usage;
+    });
+  }
+
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
     String platformVersion;
+    String usageToday;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       platformVersion = await UsageStats.platformVersion;
+      usageToday = await getUsageToday();
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -36,6 +63,7 @@ class _MyAppState extends State<MyApp> {
 
     setState(() {
       _platformVersion = platformVersion;
+      _usageToday = usageToday;
     });
   }
 
@@ -47,7 +75,13 @@ class _MyAppState extends State<MyApp> {
           title: new Text('Plugin example app'),
         ),
         body: new Center(
-          child: new Text('Running on: $_platformVersion\n'),
+          child: new Column(children: <Widget>[
+            new Text('Running on: $_platformVersion\n'),
+            new Text('Usage today: $_usageToday\n'),
+            new FloatingActionButton(
+              child: new Text("refresh"),
+              onPressed: () => updateUsage())
+          ]),
         ),
       ),
     );

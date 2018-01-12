@@ -12,6 +12,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   String _usageToday = "0:00";
+  String _usageYesterday = "0:00";
 
   @override
   initState() {
@@ -20,7 +21,11 @@ class _MyAppState extends State<MyApp> {
   }
 
   getUsageToday() async  {
-      List<String> list = await UsageStats.usageToday;
+      return "0:00";
+  }
+
+  calcDuration(List<String> list)
+  {
       num duration = 0;
       for (var s in list) {
         var entry = s.split(";");
@@ -38,6 +43,10 @@ class _MyAppState extends State<MyApp> {
 
   updateUsage() async {
     var usage = await getUsageToday();
+    var yesterday = new  DateTime.now();  
+    var oneDay = new Duration(days: 1, hours: yesterday.hour, minutes: yesterday.minute, seconds: yesterday.second);
+    var usagList = await UsageStats.usageStats(yesterday.millisecondsSinceEpoch,new  DateTime.now().millisecondsSinceEpoch);
+    yesterday.subtract(oneDay) ;
     setState(() {
       _usageToday : usage;
     });

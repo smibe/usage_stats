@@ -23,18 +23,14 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
     }
   }
 
-  override fun onMethodCall(call: MethodCall, result: Result): Unit {
-    if (call.method.equals("getPlatformVersion")) {
-      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-    } else if (call.method == "usageToday") {
+  fun getUsageStats(start : Long, end : Long) : ArrayList<String>
+  {
        var mgr =  _registrar.context().getSystemService("usagestats");
        var list : ArrayList<String> = ArrayList()
        if (mgr is UsageStatsManager)
        {
-        val cal = Calendar.getInstance()
-        cal.set(HOUR_OF_DAY, 0)
 
-        val queryUsageStats = mgr.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, cal.timeInMillis, System.currentTimeMillis())
+        val queryUsageStats = mgr.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, end)
 
         if (queryUsageStats.size == 0) {          
           _registrar.context().startActivity(Intent("android.settings.USAGE_ACCESS_SETTINGS"))
@@ -45,6 +41,23 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
           }
         }
        }
+       return list
+  }
+
+  override fun onMethodCall(call: MethodCall, result: Result): Unit {
+    if (call.method.equals("getPlatformVersion")) {
+      result.success("Android ${android.os.Build.VERSION.RELEASE}")
+    } else if (call.method == "usageToday") {
+        val start = Calendar.getInstance()
+        start.set(HOUR_OF_DAY, 0)
+        val end = System.currentTimeMillis()
+        val list = getUsageStats(start.timeInMillis, end)
+      result.success(list)
+    } else if (call.method == "usageStats") {
+        val start = Calendar.getInstance()
+        start.set(HOUR_OF_DAY, 0)
+        val end = System.currentTimeMillis()
+        val list = getUsageStats(start.timeInMillis, end)
       result.success(list)
     } else {
       result.notImplemented()

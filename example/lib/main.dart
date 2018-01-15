@@ -45,10 +45,10 @@ class _MyAppState extends State<MyApp> {
     var usage = await getUsageToday();
     var yesterday = new  DateTime.now();  
     var oneDay = new Duration(days: 1, hours: yesterday.hour, minutes: yesterday.minute, seconds: yesterday.second);
+    yesterday = yesterday.subtract(oneDay) ;
     var usagList = await UsageStats.usageStats(yesterday.millisecondsSinceEpoch,new  DateTime.now().millisecondsSinceEpoch);
-    yesterday.subtract(oneDay) ;
     setState(() {
-      _usageToday : usage;
+      _usageToday = calcDuration(usagList);
     });
   }
 

@@ -1,22 +1,19 @@
 package com.smibe.usagestats
 
-import android.app.usage.UsageStats
+import android.app.AppOpsManager
 import android.app.usage.UsageStatsManager
+import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.util.Log
-import java.util.*
-import java.util.Calendar.HOUR_OF_DAY
-
+import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import android.app.AppOpsManager
-import android.content.Context
-import android.content.pm.PackageManager
-import android.content.Context.APP_OPS_SERVICE
-import android.os.Build
+import java.util.*
+import java.util.Calendar.HOUR_OF_DAY
 
 
 class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
@@ -47,9 +44,21 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
         return granted;
     }
 
+    fun getAppName(packageName : String) : String {
+        val pm = _registrar.context().getPackageManager()
+        var ai: ApplicationInfo?
+        try {
+            ai = pm.getApplicationInfo(packageName, 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+            ai = null
+        }
+
+        return if (ai != null)  pm.getApplicationLabel(ai).toString() else "(unknown)"
+    }
+
   fun getUsageStats(start : Long, end : Long) : ArrayList<String>
   {
-       var mgr =  _registrar.context().getSystemService("usagestats");
+       var mgr =  _registrar.context().getSystemService(Context.USAGE_STATS_SERVICE);
        var list : ArrayList<String> = ArrayList()
        if (mgr is UsageStatsManager)
        {
@@ -64,7 +73,7 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
         else {
           for (item in queryUsageStats) {
             Log.d("usage-stats", "Item: ${item.totalTimeInForeground};${item.packageName}")
-            list.add("${item.totalTimeInForeground};${item.packageName}")
+            list.add("${item.totalTimeInForeground};${item.packageName};${getAppName(item.packageName)}")
           }
         }
        }

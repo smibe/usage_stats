@@ -9,6 +9,29 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => new _MyAppState();
 }
 
+class UsageStats
+{
+  String packageName;
+  String appName;
+  int duration;
+
+  UsageStats(this.packageName, this.appName, this.duration);
+
+  UsageStats.fromCsv(String csvString) {
+  
+    var entry = csvString.split(";");
+    if (entry.length >= 2) {
+      this.duration = int.parse(entry[0]);
+      this.packageName = entry[1];
+    }
+
+    if (entry.length >= 3) {
+      this.appName = entry[2];
+    }
+  }
+
+}
+
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   String _usageToday = "0:00";

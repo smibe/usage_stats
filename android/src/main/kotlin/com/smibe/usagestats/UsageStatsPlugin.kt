@@ -1,6 +1,7 @@
 package com.smibe.usagestats
 
 import android.app.AppOpsManager
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -56,27 +57,56 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
         return if (ai != null)  pm.getApplicationLabel(ai).toString() else "(unknown)"
     }
 
+    fun getEvents(start: Long, end :Long) : ArrayList<String> {
+        var list: ArrayList<String> = ArrayList()
+        if (!ensureUsageAccessSettings())
+            list;
+
+        var mgr = _registrar.context().getSystemService(Context.USAGE_STATS_SERVICE);
+        if (!(mgr is UsageStatsManager))
+            return list;
+
+        Log.d("usage-stats", "queryUsageStats ${start} : ${end}")
+        var usageEvent = mgr.queryEvents(start, end)
+
+        var event: UsageEvents.Event = UsageEvents.Event();
+        while (usageEvent.hasNextEvent()) {
+            if (!usageEvent.getNextEvent(event))
+                continue;
+
+            Log.d("usage-stats", " ${event!!.packageName}, ${event!!.eventType} ${event!!.timeStamp}")
+            list.add("${event.timeStamp};${event.packageName};${event.eventType}")
+        }
+        return list
+    }
+
+
+        fun ensureUsageAccessSettings() : Boolean {
+            if (!checkUsageStatsGranted()) {
+                Log.d("usage-stats", "queryUsageStats- permission not granted")
+                _registrar.context().startActivity(Intent("android.settings.USAGE_ACCESS_SETTINGS"))
+                return false;
+            }
+            return true;
+        }
+
   fun getUsageStats(start : Long, end : Long) : ArrayList<String>
   {
-       var mgr =  _registrar.context().getSystemService(Context.USAGE_STATS_SERVICE);
-       var list : ArrayList<String> = ArrayList()
-       if (mgr is UsageStatsManager)
-       {
+      var list : ArrayList<String> = ArrayList()
+      if (!ensureUsageAccessSettings())
+        list;
+
+      var mgr =  _registrar.context().getSystemService(Context.USAGE_STATS_SERVICE);
+       if (!(mgr is UsageStatsManager))
+           return list;
 
         Log.d("usage-stats", "queryUsageStats ${start} : ${end}")
         val queryUsageStats = mgr.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, end)
 
-        if (!checkUsageStatsGranted()) {
-          Log.d("usage-stats", "queryUsageStats- permission not granted")
-          _registrar.context().startActivity(Intent("android.settings.USAGE_ACCESS_SETTINGS"))
-        }
-        else {
           for (item in queryUsageStats) {
             Log.d("usage-stats", "Item: ${item.totalTimeInForeground};${item.packageName}")
             list.add("${item.totalTimeInForeground};${item.packageName};${getAppName(item.packageName)}")
           }
-        }
-       }
        return list
   }
 
@@ -93,16 +123,27 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
     } else if (call.method == "usageStats") {
         Log.d("usage-stats", "Now: ${System.currentTimeMillis()}")
         try {
-            //Log.d("usage-stats", "Got call: ${call.arguments<>()}")
             var startL : Long = call.argument("start");
             var endL : Long = call.argument("end");
 
-                Log.d("usage-stats", "Got arguments ${startL} : ${endL}")
+                Log.d("usage-stats", "usageStats arguments: ${startL} : ${endL}")
             val list = getUsageStats(startL, endL)
             result.success(list)
         }
         catch (e : Exception) {
-            Log.d("usage-stats", "failed: ${e}")
+            Log.d("usage-stats", "usageStats() failed: ${e}")
+        }
+    } else if (call.method == "getEvents") {
+        try {
+            var startL : Long = call.argument("start");
+            var endL : Long = call.argument("end");
+
+            Log.d("usage-stats", "getEvents arguments: ${startL} : ${endL}")
+            val list = getEvents(startL, endL)
+            result.success(list)
+        }
+        catch (e : Exception) {
+            Log.d("usage-stats", "getEvents() failed: ${e}")
         }
     } else {
       result.notImplemented()

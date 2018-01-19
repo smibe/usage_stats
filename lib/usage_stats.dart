@@ -100,7 +100,8 @@ class UsageStats {
     int timestamp = start;
     String packageName = "";
     Map<String, UsageStatsData> usages = new Map<String, UsageStatsData>();
-    for (var event in events)
+    var event = null;
+    for (event in events)
     {
       if (event.eventType  == EventData.MOVE_TO_BACKGROUND && packageName == event.packageName)
       {
@@ -123,6 +124,8 @@ class UsageStats {
     //update the last package
     if (packageName != "")
     {
+      event.timestamp = end;
+      event.eventType = EventData.MOVE_TO_BACKGROUND;
       updateUsageData(usages, event, packageName, timestamp);
     }
 return  usages.values.toList();

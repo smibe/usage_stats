@@ -75,7 +75,7 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
                 continue;
 
             Log.d("usage-stats", " ${event!!.packageName}, ${event!!.eventType} ${event!!.timeStamp}")
-            list.add("${event.timeStamp};${event.packageName};${event.eventType}")
+            list.add("${event.timeStamp};${event.eventType};${event.packageName};${getAppName(event.packageName)}")
         }
         return list
     }

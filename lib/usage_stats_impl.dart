@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import 'usage_stats_data.dart';
 import 'event_data.dart';
 import 'usage_stats.dart';

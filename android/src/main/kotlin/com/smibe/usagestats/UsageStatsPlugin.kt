@@ -123,11 +123,11 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
     } else if (call.method == "usageStats") {
         Log.d("usage-stats", "Now: ${System.currentTimeMillis()}")
         try {
-            var startL : Long = call.argument("start");
-            var endL : Long = call.argument("end");
+            var startL : Long? = call.argument("start");
+            var endL : Long? = call.argument("end");
 
-                Log.d("usage-stats", "usageStats arguments: ${startL} : ${endL}")
-            val list = getUsageStats(startL, endL)
+                Log.d("usage-stats", "usageStats arguments: ${startL!!} : ${endL!!}")
+            val list = getUsageStats(startL!!, endL!!)
             result.success(list)
         }
         catch (e : Exception) {
@@ -135,11 +135,11 @@ class UsageStatsPlugin(registrar: Registrar): MethodCallHandler {
         }
     } else if (call.method == "getEvents") {
         try {
-            var startL : Long = call.argument("start");
-            var endL : Long = call.argument("end");
+            var startL : Long? = call.argument("start");
+            var endL : Long? = call.argument("end");
 
-            Log.d("usage-stats", "getEvents arguments: ${startL} : ${endL}")
-            val list = getEvents(startL, endL)
+            Log.d("usage-stats", "getEvents arguments: ${startL!!} : ${endL!!}")
+            val list = getEvents(startL!!, endL!!)
             result.success(list)
         }
         catch (e : Exception) {

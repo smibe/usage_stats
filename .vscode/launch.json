@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Flutter mobile app",
-            "cwd": "${workspaceFolder}/example",
+            "name": "Flutter",
             "request": "launch",
-            "type": "flutter",
+            "program": "example/lib/main.dart",
+            "type": "dart"
         }
     ]
 }
